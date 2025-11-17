@@ -32,7 +32,7 @@ enum Role {
 model Club {
   id          Int     @id @default(autoincrement())
   name        String
-  category    String
+  category    ClubCategory
   description String
   logo        String?
   approved    Boolean @default(false)
@@ -63,6 +63,12 @@ enum MembershipStatus {
 enum EventType {
   CLUB
   INSTITUTE
+}
+
+enum ClubCategory {
+  TECH
+  NON_TECH
+  EXTRACURRICULAR
 }
 
 model Event {

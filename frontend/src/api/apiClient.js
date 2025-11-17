@@ -38,7 +38,8 @@ async function request(endpoint, options = {}) {
 export const get = (endpoint) => request(endpoint, { method: "GET" });
 export const post = (endpoint, body) => request(endpoint, { method: "POST", body: JSON.stringify(body) });
 export const put = (endpoint, body) => request(endpoint, { method: "PUT", body: JSON.stringify(body) });
+export const patch = (endpoint, body) => request(endpoint, { method: "PATCH", body: body ? JSON.stringify(body) : undefined });
 export const del = (endpoint) => request(endpoint, { method: "DELETE" });
 
-export const apiClient = { get, post, put, del };
+export const apiClient = { get, post, put, patch, del };
 export default apiClient;

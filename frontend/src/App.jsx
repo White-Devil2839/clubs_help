@@ -13,6 +13,8 @@ import CreateEvent from "./pages/CreateEvent";
 import AdminUsers from "./pages/AdminUsers";
 import AdminMemberships from "./pages/AdminMemberships";
 import AdminEventRegistrations from "./pages/AdminEventRegistrations";
+import ManageClubMembers from "./pages/ManageClubMembers";
+import ManageEventRegistrations from "./pages/ManageEventRegistrations";
 import MyActivity from "./pages/MyActivity";
 
 function ProtectedRoute({ children, roles }) {
@@ -70,6 +72,8 @@ function App() {
             <Route path="/admin/users" element={<ProtectedRoute roles={["ADMIN"]}><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/memberships" element={<ProtectedRoute roles={["ADMIN"]}><AdminMemberships /></ProtectedRoute>} />
             <Route path="/admin/event-registrations" element={<ProtectedRoute roles={["ADMIN"]}><AdminEventRegistrations /></ProtectedRoute>} />
+            <Route path="/clubs/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageClubMembers /></ProtectedRoute>} />
+            <Route path="/events/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageEventRegistrations /></ProtectedRoute>} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
           </Routes>

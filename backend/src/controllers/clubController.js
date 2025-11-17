@@ -14,7 +14,10 @@ const getAllClubs = async (req, res) => {
 // Get single club by ID
 const getClubById = async (req, res) => {
   try {
-    const club = await prisma.club.findUnique({ where: { id: Number(req.params.id) }, include: { members: true } });
+    const club = await prisma.club.findUnique({ 
+      where: { id: Number(req.params.id) }, 
+      include: { memberships: { include: { user: { select: { id: true, name: true, email: true } } } } } 
+    });
     if (!club) return res.status(404).json({ message: 'Club not found' });
     res.json(club);
   } catch (error) {
@@ -22,15 +25,68 @@ const getClubById = async (req, res) => {
   }
 };
 
-// Create club (approved: false)
-const createClub = async (req, res) => {
-  const { name, description } = req.body;
+// Get all members of a specific club (admin only)
+const getClubMembers = async (req, res) => {
   try {
+    const clubId = Number(req.params.id);
+    
+    // Check if club exists
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (!club) {
+      return res.status(404).json({ message: 'Club not found' });
+    }
+    
+    const memberships = await prisma.clubMembership.findMany({
+      where: { clubId },
+      include: { 
+        user: { select: { id: true, name: true, email: true } },
+        club: { select: { id: true, name: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    
+    res.json(memberships);
+  } catch (error) {
+    console.error('Error fetching club members:', error);
+    res.status(500).json({ message: 'Failed to fetch club members', error: error.message });
+  }
+};
+
+// Create club (approved: true for admins)
+const createClub = async (req, res) => {
+  const { name, description, category } = req.body;
+  
+  // Validation
+  if (!name) {
+    return res.status(400).json({ message: 'Club name is required' });
+  }
+  if (!description) {
+    return res.status(400).json({ message: 'Club description is required' });
+  }
+  if (!category) {
+    return res.status(400).json({ message: 'Club category is required' });
+  }
+  
+  // Validate category enum
+  const validCategories = ['TECH', 'NON_TECH', 'EXTRACURRICULAR'];
+  if (!validCategories.includes(category)) {
+    return res.status(400).json({ message: `Invalid category. Must be one of: ${validCategories.join(', ')}` });
+  }
+  
+  try {
+    // Since this endpoint requires admin access, automatically approve the club
     const club = await prisma.club.create({
-      data: { name, description, approved: false, createdById: req.user.id },
+      data: { 
+        name, 
+        description, 
+        category,
+        approved: true, // Auto-approve for admins
+        active: true,
+      },
     });
     res.status(201).json(club);
   } catch (error) {
+    console.error('Error creating club:', error);
     res.status(500).json({ message: 'Failed to create club', error: error.message });
   }
 };
@@ -51,9 +107,45 @@ const enrollInClub = async (req, res) => {
   }
 };
 
+// Delete club (admin only)
+const deleteClub = async (req, res) => {
+  try {
+    const clubId = Number(req.params.id);
+    
+    // Check if club exists
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (!club) {
+      return res.status(404).json({ message: 'Club not found' });
+    }
+    
+    // Get all events for this club first
+    const clubEvents = await prisma.event.findMany({ where: { clubId }, select: { id: true } });
+    const eventIds = clubEvents.map(e => e.id);
+    
+    // Delete related records first
+    // Delete event registrations for club's events
+    if (eventIds.length > 0) {
+      await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
+    }
+    // Delete club memberships
+    await prisma.clubMembership.deleteMany({ where: { clubId } });
+    // Delete club events
+    await prisma.event.deleteMany({ where: { clubId } });
+    
+    // Delete the club
+    await prisma.club.delete({ where: { id: clubId } });
+    res.json({ message: 'Club deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting club:', error);
+    res.status(500).json({ message: 'Failed to delete club', error: error.message });
+  }
+};
+
 module.exports = {
   getAllClubs,
   getClubById,
   createClub,
   enrollInClub,
+  deleteClub,
+  getClubMembers,
 };

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { approveClubRequest, approveMemberRequest, createEvent, listUsers, promoteUser, listClubMemberships, listEventRegistrations } = require('../controllers/adminController');
+const { approveClubRequest, approveMemberRequest, rejectMemberRequest, createEvent, listUsers, promoteUser, listClubMemberships, listEventRegistrations } = require('../controllers/adminController');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 
 // Approve club, member request, create event
 router.patch('/club/:id/approve', authMiddleware, isAdmin, approveClubRequest);
 router.patch('/member/:id/approve', authMiddleware, isAdmin, approveMemberRequest);
+router.patch('/member/:id/reject', authMiddleware, isAdmin, rejectMemberRequest);
 router.post('/event', authMiddleware, isAdmin, createEvent);
 
 // Users admin actions

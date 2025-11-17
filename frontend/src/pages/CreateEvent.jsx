@@ -19,12 +19,20 @@ export default function CreateEvent() {
     setSuccess(false);
     setLoading(true);
     try {
+      // Validate date before sending
+      if (!form.date) {
+        setError('Date is required');
+        setLoading(false);
+        return;
+      }
+      
       const payload = {
         name: form.name,
         description: form.description,
-        date: form.date ? new Date(form.date).toISOString() : undefined,
-        clubId: form.clubId ? Number(form.clubId) : undefined,
+        date: new Date(form.date).toISOString(),
+        clubId: form.clubId && form.clubId.trim() !== '' ? Number(form.clubId) : null,
       };
+      
       const res = await apiClient.post('/admin/event', payload);
       if (res && res.id) {
         setSuccess(true);
@@ -33,6 +41,7 @@ export default function CreateEvent() {
         setError(res.message || 'Failed to create event');
       }
     } catch (e) {
+      console.error('Error creating event:', e);
       setError(e.message || 'Failed to create event');
     }
     setLoading(false);
@@ -63,10 +72,9 @@ export default function CreateEvent() {
         />
         <input
           type="number"
-          placeholder="Club ID"
+          placeholder="Club ID (optional)"
           value={form.clubId}
           onChange={e => setForm(f => ({ ...f, clubId: e.target.value }))}
-          required
         />
         <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create Event'}</button>
       </form>

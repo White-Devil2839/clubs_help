@@ -1,4 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
+const { sendEmail } = require('../utils/emailService');
+const {
+  membershipApprovedEmail,
+  membershipRejectedEmail,
+  newEventNotificationEmail,
+} = require('../utils/emailTemplates');
 const prisma = new PrismaClient();
 
 // Approve club request
@@ -16,10 +22,65 @@ const approveClubRequest = async (req, res) => {
 const approveMemberRequest = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const updated = await prisma.clubMembership.update({ where: { id }, data: { status: 'APPROVED' } });
+    
+    // Check if membership exists
+    const membership = await prisma.clubMembership.findUnique({ where: { id } });
+    if (!membership) {
+      return res.status(404).json({ message: 'Membership request not found' });
+    }
+    
+    const updated = await prisma.clubMembership.update({ 
+      where: { id }, 
+      data: { status: 'APPROVED' },
+      include: { 
+        user: { select: { id: true, name: true, email: true } },
+        club: { select: { id: true, name: true } }
+      }
+    });
+    if (updated?.user?.email) {
+      sendEmail({
+        to: updated.user.email,
+        subject: `Membership Approved - ${updated.club?.name || 'Club'}`,
+        html: membershipApprovedEmail(updated.user.name || 'Member', updated.club?.name || 'the club'),
+      });
+    }
     res.json(updated);
   } catch (error) {
+    console.error('Error approving member request:', error);
     res.status(500).json({ message: 'Failed to approve member', error: error.message });
+  }
+};
+
+// Reject member request
+const rejectMemberRequest = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    
+    // Check if membership exists
+    const membership = await prisma.clubMembership.findUnique({ where: { id } });
+    if (!membership) {
+      return res.status(404).json({ message: 'Membership request not found' });
+    }
+    
+    const updated = await prisma.clubMembership.update({ 
+      where: { id }, 
+      data: { status: 'REJECTED' },
+      include: { 
+        user: { select: { id: true, name: true, email: true } },
+        club: { select: { id: true, name: true } }
+      }
+    });
+    if (updated?.user?.email) {
+      sendEmail({
+        to: updated.user.email,
+        subject: `Membership Update - ${updated.club?.name || 'Club'}`,
+        html: membershipRejectedEmail(updated.user.name || 'Member', updated.club?.name || 'the club'),
+      });
+    }
+    res.json(updated);
+  } catch (error) {
+    console.error('Error rejecting member request:', error);
+    res.status(500).json({ message: 'Failed to reject member', error: error.message });
   }
 };
 
@@ -27,18 +88,81 @@ const approveMemberRequest = async (req, res) => {
 const createEvent = async (req, res) => {
   const { description, date, clubId, type } = req.body;
   const title = req.body.title || req.body.name; // support either field from clients
+  
+  // Validation
+  if (!title) {
+    return res.status(400).json({ message: 'Event title/name is required' });
+  }
+  if (!description) {
+    return res.status(400).json({ message: 'Event description is required' });
+  }
+  if (!date) {
+    return res.status(400).json({ message: 'Event date is required' });
+  }
+  
   try {
+    // Validate and parse date
+    const eventDate = new Date(date);
+    if (isNaN(eventDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid date format' });
+    }
+    
+    // Handle clubId - convert to number or null
+    let parsedClubId = null;
+    if (clubId !== undefined && clubId !== null && clubId !== '') {
+      parsedClubId = Number(clubId);
+      if (isNaN(parsedClubId)) {
+        return res.status(400).json({ message: 'Invalid clubId format' });
+      }
+      // Verify club exists
+      const club = await prisma.club.findUnique({ where: { id: parsedClubId } });
+      if (!club) {
+        return res.status(400).json({ message: `Club with ID ${parsedClubId} does not exist` });
+      }
+    }
+    
     const event = await prisma.event.create({
       data: {
         title,
         description,
-        date: new Date(date),
-        clubId: clubId !== undefined && clubId !== null && clubId !== '' ? Number(clubId) : null,
-        type: type || undefined,
+        date: eventDate,
+        clubId: parsedClubId,
+        type: type || 'CLUB',
       },
     });
+    if (parsedClubId) {
+      const approvedMembers = await prisma.clubMembership.findMany({
+        where: { clubId: parsedClubId, status: 'APPROVED' },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          club: { select: { name: true } },
+        },
+      });
+
+      const clubName = approvedMembers[0]?.club?.name || 'your club';
+      const emailPromises = approvedMembers
+        .filter((member) => member.user?.email)
+        .map((member) =>
+          sendEmail({
+            to: member.user.email,
+            subject: `New Event: ${title}`,
+            html: newEventNotificationEmail(
+              member.user.name || 'Member',
+              title,
+              event.date,
+              description,
+              clubName,
+            ),
+          })
+        );
+
+      if (emailPromises.length > 0) {
+        Promise.allSettled(emailPromises);
+      }
+    }
     res.status(201).json(event);
   } catch (error) {
+    console.error('Error creating event:', error);
     res.status(500).json({ message: 'Failed to create event', error: error.message });
   }
 };
@@ -93,6 +217,7 @@ const listEventRegistrations = async (_req, res) => {
 module.exports = {
   approveClubRequest,
   approveMemberRequest,
+  rejectMemberRequest,
   createEvent,
   listUsers,
   promoteUser,
