@@ -16,7 +16,7 @@ CREATE TABLE `User` (
 CREATE TABLE `Club` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
-    `category` VARCHAR(191) NOT NULL,
+    `category` ENUM('TECH', 'NON_TECH', 'EXTRACURRICULAR') NOT NULL,
     `description` VARCHAR(191) NOT NULL,
     `logo` VARCHAR(191) NULL,
     `approved` BOOLEAN NOT NULL DEFAULT false,
