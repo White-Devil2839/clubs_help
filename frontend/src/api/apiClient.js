@@ -1,6 +1,7 @@
 // frontend/src/api/apiClient.js
 
-const BASE_URL = "/api";
+// Use environment variable in production, or relative path in development
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 function getAuthHeader() {
   const token = localStorage.getItem("token");

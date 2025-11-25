@@ -1,0 +1,99 @@
+generator client {
+  provider  = "prisma-client-js"
+  env_files = ["../.env"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  env_files = ["../.env"]
+}
+
+model User {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  email              String              @unique
+  password           String
+  role               Role                @default(MEMBER)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  memberships        ClubMembership[]
+  eventRegistrations EventRegistration[]
+}
+
+model Club {
+  id          Int              @id @default(autoincrement())
+  name        String
+  category    ClubCategory
+  description String
+  logo        String?
+  approved    Boolean          @default(false)
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  memberships ClubMembership[]
+  events      Event[]
+}
+
+model ClubMembership {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  clubId    Int
+  status    MembershipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  club      Club             @relation(fields: [clubId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([clubId], map: "ClubMembership_clubId_fkey")
+  @@index([userId], map: "ClubMembership_userId_fkey")
+}
+
+model Event {
+  id            Int                 @id @default(autoincrement())
+  title         String
+  description   String
+  date          DateTime
+  type          EventType           @default(CLUB)
+  clubId        Int?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  club          Club?               @relation(fields: [clubId], references: [id])
+  registrations EventRegistration[]
+
+  @@index([clubId], map: "Event_clubId_fkey")
+}
+
+model EventRegistration {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  eventId      Int
+  registeredAt DateTime @default(now())
+  event        Event    @relation(fields: [eventId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([eventId], map: "EventRegistration_eventId_fkey")
+  @@index([userId], map: "EventRegistration_userId_fkey")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventType {
+  CLUB
+  INSTITUTE
+}
+
+enum ClubCategory {
+  TECH
+  NON_TECH
+  EXTRACURRICULAR
+}

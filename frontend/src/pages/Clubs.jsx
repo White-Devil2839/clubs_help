@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../api/apiClient";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PageHeader from "../components/PageHeader";
+import Reveal from "../components/Reveal";
 
 export default function Clubs() {
   const [clubs, setClubs] = useState([]);
@@ -42,38 +44,60 @@ export default function Clubs() {
   }
 
   if (loading) return <div>Loading clubs...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
+
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <div>
-      <h1>Clubs</h1>
-      {message && <div style={{color:'green'}}>{message}</div>}
+    <section className="page-card">
+      <Reveal>
+        <PageHeader
+          eyebrow="Discover"
+          title="Clubs directory"
+          description="Browse every active club, view details, and request membership in seconds."
+          actions={
+            isAdmin && (
+              <Link to="/add-club" className="btn btn-primary">
+                Add club
+              </Link>
+            )
+          }
+        />
+      </Reveal>
+      {error && <div className="alert alert-error">{error}</div>}
+      {message && <div className="alert alert-success">{message}</div>}
       {clubs.length === 0 ? (
-        <p>No clubs found.</p>
+        <Reveal className="empty-state" delay={150}>
+          <p>No clubs found yet. Be the first to create one!</p>
+        </Reveal>
       ) : (
-        <ul>
-          {clubs.map(club => (
-            <li key={club.id} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Link to={`/clubs/${club.id}`}>{club.name}</Link>
-              {user && user.role === 'ADMIN' && (
-                <button 
-                  onClick={() => handleDelete(club.id, club.name)}
-                  style={{ 
-                    padding: '4px 8px', 
-                    backgroundColor: '#dc3545', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: 4,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Delete
-                </button>
-              )}
-            </li>
+        <Reveal as="div" className="card-grid" delay={150}>
+          {clubs.map((club) => (
+            <article key={club.id} className="entity-card">
+              <div className="card-header">
+                <p className="eyebrow">{club.category || "CLUB"}</p>
+                <h3>{club.name}</h3>
+              </div>
+              <p className="muted">{club.description}</p>
+              <div className="card-meta">
+                <span className={`status-pill ${club.approved ? "success" : "pending"}`}>
+                  {club.approved ? "Approved" : "Pending approval"}
+                </span>
+                <span>{club.memberships?.length || 0} members</span>
+              </div>
+              <div className="card-actions">
+                <Link to={`/clubs/${club.id}`} className="btn btn-outline">
+                  View club
+                </Link>
+                {isAdmin && (
+                  <button className="btn btn-danger" onClick={() => handleDelete(club.id, club.name)}>
+                    Delete
+                  </button>
+                )}
+              </div>
+            </article>
           ))}
-        </ul>
+        </Reveal>
       )}
-    </div>
+    </section>
   );
 }

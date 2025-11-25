@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../api/apiClient";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PageHeader from "../components/PageHeader";
+import Reveal from "../components/Reveal";
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -50,68 +52,70 @@ export default function Events() {
   }
 
   if (loading) return <div>Loading events...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
 
   // Check if user is admin (case-insensitive)
   const isAdmin = user && (user.role === 'ADMIN' || user.role === 'admin');
 
   return (
-    <div>
-      <h1>Events</h1>
-      {message && <div style={{color:'green'}}>{message}</div>}
+    <section className="page-card">
+      <Reveal>
+        <PageHeader
+          eyebrow="What’s on"
+          title="Events calendar"
+          description="Register in two taps and keep tabs on the most exciting happenings on campus."
+          actions={
+            isAdmin && (
+              <Link to="/admin/create-event" className="btn btn-primary">
+                Create event
+              </Link>
+            )
+          }
+        />
+      </Reveal>
+      {error && <div className="alert alert-error">{error}</div>}
+      {message && <div className="alert alert-success">{message}</div>}
       {events.length === 0 ? (
-        <p>No events found.</p>
+        <Reveal className="empty-state" delay={150}>No events found.</Reveal>
       ) : (
-        <ul>
-          {events.map(ev => (
-            <li key={ev.id} style={{ marginBottom: 12 }}>
-              <div style={{ fontWeight: 600 }}>{ev.title}</div>
-              <div>{ev.description}</div>
-              {ev.date && <div>{new Date(ev.date).toLocaleString()}</div>}
-              <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Reveal as="div" className="card-grid" delay={150}>
+          {events.map((ev) => (
+            <article key={ev.id} className="entity-card">
+              <div className="card-header">
+                <p className="eyebrow">{ev.type || "Event"}</p>
+                <h3>{ev.title}</h3>
+              </div>
+              <p className="muted">{ev.description}</p>
+              {ev.date && (
+                <div className="card-meta">
+                  <span>{new Date(ev.date).toLocaleString()}</span>
+                </div>
+              )}
+              <div className="card-actions">
                 {token ? (
-                  <button onClick={() => handleRegister(ev.id)}>Register</button>
+                  <button className="btn btn-secondary" onClick={() => handleRegister(ev.id)}>
+                    Quick register
+                  </button>
                 ) : (
-                  <span style={{ fontSize: 14, color: '#666' }}>Login to register</span>
+                  <span className="muted">Login to register</span>
                 )}
+                <Link to={`/events/${ev.id}/register`} className="btn btn-link">
+                  Open page
+                </Link>
                 {isAdmin && (
                   <>
-                    <Link 
-                      to={`/events/${ev.id}/manage`}
-                      style={{ 
-                        padding: '4px 8px', 
-                        backgroundColor: '#28a745', 
-                        color: 'white', 
-                        textDecoration: 'none',
-                        borderRadius: 4,
-                        fontSize: 14
-                      }}
-                    >
-                      Manage Registrations
+                    <Link to={`/events/${ev.id}/manage`} className="btn btn-outline">
+                      Manage registrations
                     </Link>
-                    <button 
-                      onClick={() => handleDelete(ev.id, ev.title)}
-                      style={{ 
-                        padding: '4px 8px', 
-                        backgroundColor: '#dc3545', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: 4,
-                        cursor: 'pointer'
-                      }}
-                    >
+                    <button className="btn btn-danger" onClick={() => handleDelete(ev.id, ev.title)}>
                       Delete
                     </button>
                   </>
                 )}
               </div>
-              <div style={{ marginTop: 4 }}>
-                <Link to={`/events/${ev.id}/register`}>Open registration page</Link>
-              </div>
-            </li>
+            </article>
           ))}
-        </ul>
+        </Reveal>
       )}
-    </div>
+    </section>
   );
 }

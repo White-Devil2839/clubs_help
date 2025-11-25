@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
+import Reveal from '../components/Reveal';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -29,9 +31,15 @@ export default function Login() {
   }
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit} autoComplete="off">
+    <section className="page-card">
+      <Reveal>
+        <PageHeader
+          eyebrow="Welcome back"
+          title="Log in to continue"
+          description="Access your memberships, events, and admin tools."
+        />
+      </Reveal>
+      <Reveal as="form" onSubmit={handleSubmit} autoComplete="off" delay={120}>
         <input
           type="email"
           placeholder="Email"
@@ -46,9 +54,14 @@ export default function Login() {
           onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           required
         />
-        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-      </form>
-      {error && <div style={{color:'red', marginTop:10}}>{error}</div>}
-    </div>
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </Reveal>
+      <p className="muted">
+        Need an account? <Link to="/register">Register here</Link>
+      </p>
+      {error && <div className="alert alert-error">{error}</div>}
+    </section>
   );
 }

@@ -3,11 +3,17 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 const { PrismaClient } = require('@prisma/client');
+const { startEventCleanup } = require('./utils/eventCleanup');
 
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(cors());
+// CORS configuration - allow all in dev, specific origin in production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -31,4 +37,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  const interval = Number(process.env.EVENT_CLEANUP_INTERVAL_MINUTES);
+  startEventCleanup(interval);
 });

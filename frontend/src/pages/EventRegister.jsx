@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/apiClient';
+import PageHeader from '../components/PageHeader';
 
 export default function EventRegister() {
   const { id } = useParams();
@@ -27,9 +28,22 @@ export default function EventRegister() {
   }, [id]);
 
   return (
-    <div>
-      <h1>Event Registration</h1>
-      <p style={{ color: status === 'error' ? 'red' : 'inherit' }}>{message}</p>
-    </div>
+    <section className="page-card">
+      <PageHeader
+        eyebrow="Events"
+        title="Event registration"
+        description="We’re processing your RSVP and will update you shortly."
+      />
+      <p className={
+        status === 'error' 
+          ? 'alert alert-error' 
+          : status === 'success' 
+          ? 'alert alert-success' 
+          : 'alert'
+      }>{message}</p>
+      <Link to="/events" className="btn btn-outline">
+        Back to events
+      </Link>
+    </section>
   );
 }

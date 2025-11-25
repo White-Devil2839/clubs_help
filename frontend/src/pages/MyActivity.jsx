@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
+import PageHeader from '../components/PageHeader';
+import Reveal from '../components/Reveal';
 
 export default function MyActivity() {
   const { token } = useAuth();
@@ -31,51 +33,77 @@ export default function MyActivity() {
     return registrations.filter(x => x.event?.date && new Date(x.event.date).getTime() > now);
   }, [registrations]);
 
-  if (!token) return <div><h1>My Activity</h1><p>Please login to view your activity.</p></div>;
+  if (!token) {
+    return (
+      <section className="page-card">
+        <PageHeader title="My activity" description="Please login to view your activity." />
+      </section>
+    );
+  }
   if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
+  if (error) return <div className="alert alert-error">{error}</div>;
 
   return (
-    <div>
-      <h1>My Activity</h1>
+    <>
+      <section className="page-card">
+        <Reveal>
+          <PageHeader
+            eyebrow="Dashboard"
+            title="My activity"
+            description="Track club memberships and upcoming events you’ve registered for."
+          />
+        </Reveal>
+        {memberships.length === 0 ? (
+          <Reveal className="empty-state" delay={120}>No memberships yet.</Reveal>
+        ) : (
+          <Reveal className="table-scroll" delay={120}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Club</th>
+                  <th>Approved</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {memberships.map(m => (
+                  <tr key={m.id}>
+                    <td>{m.club?.name}</td>
+                    <td>{m.club?.approved ? 'Yes' : 'No'}</td>
+                    <td>
+                      <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
+                        {m.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Reveal>
+        )}
+      </section>
 
-      <h2 style={{ marginTop: 16 }}>Memberships</h2>
-      {memberships.length === 0 ? (
-        <p>No memberships yet.</p>
-      ) : (
-        <table style={{ width:'100%', borderCollapse:'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign:'left' }}>Club</th>
-              <th style={{ textAlign:'left' }}>Approved</th>
-              <th style={{ textAlign:'left' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {memberships.map(m => (
-              <tr key={m.id}>
-                <td>{m.club?.name}</td>
-                <td>{m.club?.approved ? 'Yes' : 'No'}</td>
-                <td>{m.status}</td>
-              </tr>
+      <section className="page-card">
+        <Reveal>
+          <PageHeader
+            eyebrow="Next up"
+            title="Upcoming registered events"
+            description="Stay ready for every RSVP."
+          />
+        </Reveal>
+        {upcoming.length === 0 ? (
+          <Reveal className="empty-state" delay={120}>No upcoming registered events.</Reveal>
+        ) : (
+          <Reveal as="ul" className="stack-list" delay={120}>
+            {upcoming.map(r => (
+              <li key={r.id}>
+                <div style={{ fontWeight: 600 }}>{r.event?.title}</div>
+                <div className="muted">{r.event?.date ? new Date(r.event.date).toLocaleString() : ''}</div>
+              </li>
             ))}
-          </tbody>
-        </table>
-      )}
-
-      <h2 style={{ marginTop: 24 }}>Upcoming Registered Events</h2>
-      {upcoming.length === 0 ? (
-        <p>No upcoming registered events.</p>
-      ) : (
-        <ul>
-          {upcoming.map(r => (
-            <li key={r.id}>
-              <div style={{ fontWeight: 600 }}>{r.event?.title}</div>
-              <div>{r.event?.date ? new Date(r.event.date).toLocaleString() : ''}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+          </Reveal>
+        )}
+      </section>
+    </>
   );
 }

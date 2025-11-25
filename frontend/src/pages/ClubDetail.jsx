@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../api/apiClient";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PageHeader from "../components/PageHeader";
+import Reveal from "../components/Reveal";
 
 export default function ClubDetail() {
   const { id } = useParams();
@@ -75,7 +77,16 @@ export default function ClubDetail() {
   }
 
   if (loading) return <div>Loading club...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
+  if (error && !club) {
+    return (
+      <section className="page-card">
+        <Link to="/clubs" className="back-link">
+          ← Back to clubs
+        </Link>
+        <PageHeader title="Unable to load club" description={error} />
+      </section>
+    );
+  }
   if (!club) return null;
 
   // Debug: Check user role
@@ -83,83 +94,53 @@ export default function ClubDetail() {
   const isStudent = user && user.role !== 'ADMIN' && user.role !== 'admin';
 
   return (
-    <div>
-      <div style={{ marginBottom: 20 }}>
-        <Link to="/clubs">← Back to Clubs</Link>
-      </div>
-      <h1>{club.name}</h1>
-      <p>{club.description}</p>
-      <p><b>Category:</b> {club.category}</p>
-      <p><b>Approved:</b> {club.approved ? "Yes" : "No"}</p>
-      <p><b>Members:</b> {club.memberships?.length || 0}</p>
-      
-      {message && <div style={{color:'green', marginTop: 12, padding: 8, backgroundColor: '#d4edda', borderRadius: 4}}>{message}</div>}
-      {error && <div style={{color:'red', marginTop: 12, padding: 8, backgroundColor: '#f8d7da', borderRadius: 4}}>{error}</div>}
-      
-      <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        {/* Student: Apply for membership */}
+    <section className="page-card">
+      <Link to="/clubs" className="back-link">
+        ← Back to clubs
+      </Link>
+      <Reveal>
+        <PageHeader
+          eyebrow={club.category || "Club"}
+          title={club.name}
+          description={club.description}
+          actions={
+            isAdmin && (
+              <div className="header-actions">
+                <Link to={`/clubs/${id}/manage`} className="btn btn-secondary">
+                  Manage members
+                </Link>
+                <button className="btn btn-danger" onClick={handleDelete}>
+                  Delete club
+                </button>
+              </div>
+            )
+          }
+        />
+      </Reveal>
+      <Reveal className="meta-grid" delay={150}>
+        <div className="meta-tile">
+          <p className="muted">Approval</p>
+          <strong>{club.approved ? "Approved" : "Pending"}</strong>
+        </div>
+        <div className="meta-tile">
+          <p className="muted">Active members</p>
+          <strong>{club.memberships?.length || 0}</strong>
+        </div>
+      </Reveal>
+      {message && <div className="alert alert-success">{message}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      <Reveal className="card-actions" style={{ marginTop: '1.2rem' }} delay={200}>
         {isStudent && !isEnrolled && (
-          <button 
-            onClick={handleEnroll}
-            style={{ 
-              padding: '8px 16px', 
-              backgroundColor: '#007bff', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: 4,
-              cursor: 'pointer'
-            }}
-          >
-            Apply for Membership
+          <button className="btn btn-primary" onClick={handleEnroll}>
+            Apply for membership
           </button>
         )}
-        
-        {/* Show enrollment status for students */}
         {isStudent && isEnrolled && (
-          <div style={{ 
-            padding: '8px 16px', 
-            backgroundColor: enrollmentStatus === 'APPROVED' ? '#d4edda' : '#fff3cd',
-            color: enrollmentStatus === 'APPROVED' ? '#155724' : '#856404',
-            borderRadius: 4
-          }}>
-            Membership Status: <strong>{enrollmentStatus}</strong>
-          </div>
+          <span className={`status-pill ${enrollmentStatus === 'APPROVED' ? 'success' : 'pending'}`}>
+            Membership status: {enrollmentStatus}
+          </span>
         )}
-        
-        {/* Admin: Manage members */}
-        {isAdmin && (
-          <Link 
-            to={`/clubs/${id}/manage`}
-            style={{ 
-              padding: '8px 16px', 
-              backgroundColor: '#28a745', 
-              color: 'white', 
-              textDecoration: 'none',
-              borderRadius: 4,
-              display: 'inline-block'
-            }}
-          >
-            Manage Members
-          </Link>
-        )}
-        
-        {/* Admin: Delete club */}
-        {isAdmin && (
-          <button 
-            onClick={handleDelete}
-            style={{ 
-              padding: '8px 16px', 
-              backgroundColor: '#dc3545', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: 4,
-              cursor: 'pointer'
-            }}
-          >
-            Delete Club
-          </button>
-        )}
-      </div>
-    </div>
+      </Reveal>
+    </section>
   );
 }

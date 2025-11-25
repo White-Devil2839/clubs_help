@@ -4,9 +4,14 @@ const { eventRegistrationConfirmationEmail } = require('../utils/emailTemplates'
 const prisma = new PrismaClient();
 
 // Get all events
-const getAllEvents = async (req, res) => {
+const getAllEvents = async (_req, res) => {
   try {
-    const events = await prisma.event.findMany({ include: { registrations: true } });
+    const now = new Date();
+    const events = await prisma.event.findMany({
+      where: { date: { gte: now } },
+      include: { registrations: true },
+      orderBy: { date: 'asc' },
+    });
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: 'Failed to get events', error: error.message });
@@ -62,21 +67,35 @@ const getEventRegistrations = async (req, res) => {
 // Register user for event
 const registerEvent = async (req, res) => {
   const eventId = Number(req.params.id || req.body.eventId);
+  if (Number.isNaN(eventId)) {
+    return res.status(400).json({ message: 'Invalid event id' });
+  }
+
   try {
-    // Check for duplicate registration
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, title: true, date: true },
+    });
+
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (new Date(event.date) <= new Date()) {
+      return res.status(400).json({ message: 'This event has already concluded.' });
+    }
+
     const exists = await prisma.eventRegistration.findFirst({ where: { userId: req.user.id, eventId } });
     if (exists) return res.status(409).json({ message: 'Already registered' });
+
     const registration = await prisma.eventRegistration.create({
-      data: { userId: req.user.id, eventId }
+      data: { userId: req.user.id, eventId },
     });
 
     Promise.allSettled([
       (async () => {
-        const [event, user] = await Promise.all([
-          prisma.event.findUnique({ where: { id: eventId }, select: { title: true, date: true } }),
-          prisma.user.findUnique({ where: { id: req.user.id }, select: { name: true, email: true } }),
-        ]);
-        if (event && user?.email) {
+        const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { name: true, email: true } });
+        if (user?.email) {
           await sendEmail({
             to: user.email,
             subject: `Registration Confirmed - ${event.title}`,

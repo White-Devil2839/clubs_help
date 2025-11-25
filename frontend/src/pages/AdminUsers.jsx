@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
+import PageHeader from '../components/PageHeader';
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -25,39 +26,55 @@ export default function AdminUsers() {
     }
   }
 
-  if (!user || user.role !== 'ADMIN') return <div><h1>Forbidden</h1></div>;
+  if (!user || user.role !== 'ADMIN') {
+    return (
+      <section className="page-card">
+        <PageHeader title="Forbidden" description="Admins only." />
+      </section>
+    );
+  }
   if (loading) return <div>Loading users...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
+  if (error) return <div className="alert alert-error">{error}</div>;
 
   return (
-    <div>
-      <h1>Manage Users</h1>
-      <table style={{ width:'100%', borderCollapse:'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign:'left' }}>ID</th>
-            <th style={{ textAlign:'left' }}>Name</th>
-            <th style={{ textAlign:'left' }}>Email</th>
-            <th style={{ textAlign:'left' }}>Role</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>
-                {u.role !== 'ADMIN' && (
-                  <button onClick={() => handlePromote(u.id)}>Promote to Admin</button>
-                )}
-              </td>
+    <section className="page-card">
+      <PageHeader
+        eyebrow="Admin"
+        title="Manage users"
+        description="Promote leaders to admins and keep your roster up to date."
+      />
+      <div className="table-scroll">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.id}>
+                <td>{u.id}</td>
+                <td>{u.name}</td>
+                <td>{u.email}</td>
+                <td>
+                  <span className={`status-pill ${u.role === 'ADMIN' ? 'success' : ''}`}>{u.role}</span>
+                </td>
+                <td>
+                  {u.role !== 'ADMIN' && (
+                    <button className="btn btn-secondary" onClick={() => handlePromote(u.id)}>
+                      Promote to admin
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
+import Reveal from '../components/Reveal';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', rolePreference: 'MEMBER' });
@@ -29,12 +31,18 @@ export default function Register() {
   }
 
   return (
-    <div>
-      <h1>Register</h1>
-      <form onSubmit={handleSubmit} autoComplete="off">
+    <section className="page-card">
+      <Reveal>
+        <PageHeader
+          eyebrow="Join"
+          title="Create your account"
+          description="Register once to apply for memberships, RSVP for events, and track your activity."
+        />
+      </Reveal>
+      <Reveal as="form" onSubmit={handleSubmit} autoComplete="off" delay={120}>
         <input
           type="text"
-          placeholder="Full Name"
+          placeholder="Full name"
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           required
@@ -60,10 +68,15 @@ export default function Register() {
           <option value="MEMBER">Member</option>
           <option value="ADMIN">Admin (request)</option>
         </select>
-        <small style={{ color:'#666' }}>New accounts start as MEMBER. Admin access can be granted later.</small>
-        <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
-      </form>
-      {error && <div style={{color:'red', marginTop:10}}>{error}</div>}
-    </div>
+        <p className="muted">New accounts start as MEMBER. Admin access can be granted later.</p>
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {loading ? 'Registering...' : 'Register'}
+        </button>
+      </Reveal>
+      <p className="muted">
+        Already registered? <Link to="/login">Log in</Link>
+      </p>
+      {error && <div className="alert alert-error">{error}</div>}
+    </section>
   );
 }
