@@ -125,7 +125,7 @@ export default function ClubDetail() {
         <div className="meta-tile">
           <p className="muted">Active members</p>
           <strong>{club.memberships?.length || 0}</strong>
-        </div>
+      </div>
       </Reveal>
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-error">{error}</div>}

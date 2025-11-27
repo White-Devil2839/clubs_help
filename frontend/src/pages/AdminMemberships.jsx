@@ -36,32 +36,32 @@ export default function AdminMemberships() {
       />
       <div className="table-scroll">
         <table className="data-table">
-          <thead>
-            <tr>
+        <thead>
+          <tr>
               <th>ID</th>
               <th>User</th>
               <th>Email</th>
               <th>Club</th>
               <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(m => (
-              <tr key={m.id}>
-                <td>{m.id}</td>
-                <td>{m.user?.name}</td>
-                <td>{m.user?.email}</td>
-                <td>{m.club?.name}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(m => (
+            <tr key={m.id}>
+              <td>{m.id}</td>
+              <td>{m.user?.name}</td>
+              <td>{m.user?.email}</td>
+              <td>{m.club?.name}</td>
                 <td>
                   <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
                     {m.status}
                   </span>
                 </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
     </section>
   );
 }

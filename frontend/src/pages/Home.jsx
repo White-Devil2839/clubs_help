@@ -68,7 +68,7 @@ export default function Home() {
               </span>
             ))}
           </div>
-        </div>
+    </div>
       </Reveal>
       <Reveal as="section" className="card-grid" delay={200}>
         {highlights.map((item) => (

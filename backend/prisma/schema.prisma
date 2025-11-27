@@ -1,12 +1,12 @@
 generator client {
   provider  = "prisma-client-js"
-  env_files = ["../.env"]
+  
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
-  env_files = ["../.env"]
+  
 }
 
 model User {

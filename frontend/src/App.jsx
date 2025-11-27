@@ -64,23 +64,23 @@ function Nav() {
           ))}
         </div>
         <div className="nav-right">
-          {token && user ? (
-            <>
+        {token && user ? (
+          <>
               <span className="user-chip">{user.name}</span>
               <button className="btn btn-outline" onClick={logout}>
                 Logout
               </button>
-            </>
-          ) : (
-            <>
+          </>
+        ) : (
+          <>
               <NavLink to="/register" className="btn btn-ghost">
                 Register
               </NavLink>
               <NavLink to="/login" className="btn btn-primary">
                 Login
               </NavLink>
-            </>
-          )}
+          </>
+        )}
         </div>
       </div>
     </nav>
@@ -97,25 +97,25 @@ function App() {
             <span className="orb orb-2" />
             <span className="orb orb-3" />
           </div>
-          <Nav />
+        <Nav />
           <main className="page-shell">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/clubs" element={<Clubs />} />
-              <Route path="/clubs/:id" element={<ClubDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:id/register" element={<ProtectedRoute><EventRegister /></ProtectedRoute>} />
-              <Route path="/me" element={<ProtectedRoute><MyActivity /></ProtectedRoute>} />
-              <Route path="/add-club" element={<ProtectedRoute roles={["ADMIN"]}><AddClub /></ProtectedRoute>} />
-              <Route path="/admin/create-event" element={<ProtectedRoute roles={["ADMIN"]}><CreateEvent /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute roles={["ADMIN"]}><AdminUsers /></ProtectedRoute>} />
-              <Route path="/admin/memberships" element={<ProtectedRoute roles={["ADMIN"]}><AdminMemberships /></ProtectedRoute>} />
-              <Route path="/admin/event-registrations" element={<ProtectedRoute roles={["ADMIN"]}><AdminEventRegistrations /></ProtectedRoute>} />
-              <Route path="/clubs/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageClubMembers /></ProtectedRoute>} />
-              <Route path="/events/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageEventRegistrations /></ProtectedRoute>} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-            </Routes>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/clubs" element={<Clubs />} />
+            <Route path="/clubs/:id" element={<ClubDetail />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:id/register" element={<ProtectedRoute><EventRegister /></ProtectedRoute>} />
+            <Route path="/me" element={<ProtectedRoute><MyActivity /></ProtectedRoute>} />
+            <Route path="/add-club" element={<ProtectedRoute roles={["ADMIN"]}><AddClub /></ProtectedRoute>} />
+            <Route path="/admin/create-event" element={<ProtectedRoute roles={["ADMIN"]}><CreateEvent /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute roles={["ADMIN"]}><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/memberships" element={<ProtectedRoute roles={["ADMIN"]}><AdminMemberships /></ProtectedRoute>} />
+            <Route path="/admin/event-registrations" element={<ProtectedRoute roles={["ADMIN"]}><AdminEventRegistrations /></ProtectedRoute>} />
+            <Route path="/clubs/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageClubMembers /></ProtectedRoute>} />
+            <Route path="/events/:id/manage" element={<ProtectedRoute roles={["ADMIN"]}><ManageEventRegistrations /></ProtectedRoute>} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
           </main>
           <footer className="app-footer">
             Built with ❤️ for the clubs community.

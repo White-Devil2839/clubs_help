@@ -71,14 +71,14 @@ export default function CreateEvent() {
         setLoading(false);
         return;
       }
-
+      
       const payload = {
         name: form.name,
         description: form.description,
         date: eventDate.toISOString(),
         clubId: form.clubId && form.clubId.trim() !== '' ? Number(form.clubId) : null,
       };
-
+      
       const res = await apiClient.post('/admin/event', payload);
       if (res && res.id) {
         setSuccess(true);

@@ -45,36 +45,36 @@ export default function AdminUsers() {
       />
       <div className="table-scroll">
         <table className="data-table">
-          <thead>
-            <tr>
+        <thead>
+          <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(u => (
-              <tr key={u.id}>
-                <td>{u.id}</td>
-                <td>{u.name}</td>
-                <td>{u.email}</td>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(u => (
+            <tr key={u.id}>
+              <td>{u.id}</td>
+              <td>{u.name}</td>
+              <td>{u.email}</td>
                 <td>
                   <span className={`status-pill ${u.role === 'ADMIN' ? 'success' : ''}`}>{u.role}</span>
                 </td>
-                <td>
-                  {u.role !== 'ADMIN' && (
+              <td>
+                {u.role !== 'ADMIN' && (
                     <button className="btn btn-secondary" onClick={() => handlePromote(u.id)}>
                       Promote to admin
                     </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
     </section>
   );
 }

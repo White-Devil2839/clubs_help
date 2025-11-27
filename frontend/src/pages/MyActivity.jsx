@@ -53,32 +53,32 @@ export default function MyActivity() {
             description="Track club memberships and upcoming events you’ve registered for."
           />
         </Reveal>
-        {memberships.length === 0 ? (
+      {memberships.length === 0 ? (
           <Reveal className="empty-state" delay={120}>No memberships yet.</Reveal>
-        ) : (
+      ) : (
           <Reveal className="table-scroll" delay={120}>
             <table className="data-table">
-              <thead>
-                <tr>
+          <thead>
+            <tr>
                   <th>Club</th>
                   <th>Approved</th>
                   <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {memberships.map(m => (
-                  <tr key={m.id}>
-                    <td>{m.club?.name}</td>
-                    <td>{m.club?.approved ? 'Yes' : 'No'}</td>
+            </tr>
+          </thead>
+          <tbody>
+            {memberships.map(m => (
+              <tr key={m.id}>
+                <td>{m.club?.name}</td>
+                <td>{m.club?.approved ? 'Yes' : 'No'}</td>
                     <td>
                       <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
                         {m.status}
                       </span>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              </tr>
+            ))}
+          </tbody>
+        </table>
           </Reveal>
         )}
       </section>
@@ -91,18 +91,18 @@ export default function MyActivity() {
             description="Stay ready for every RSVP."
           />
         </Reveal>
-        {upcoming.length === 0 ? (
+      {upcoming.length === 0 ? (
           <Reveal className="empty-state" delay={120}>No upcoming registered events.</Reveal>
-        ) : (
+      ) : (
           <Reveal as="ul" className="stack-list" delay={120}>
-            {upcoming.map(r => (
-              <li key={r.id}>
-                <div style={{ fontWeight: 600 }}>{r.event?.title}</div>
+          {upcoming.map(r => (
+            <li key={r.id}>
+              <div style={{ fontWeight: 600 }}>{r.event?.title}</div>
                 <div className="muted">{r.event?.date ? new Date(r.event.date).toLocaleString() : ''}</div>
-              </li>
-            ))}
+            </li>
+          ))}
           </Reveal>
-        )}
+      )}
       </section>
     </>
   );

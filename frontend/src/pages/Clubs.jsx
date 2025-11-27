@@ -90,9 +90,9 @@ export default function Clubs() {
                 </Link>
                 {isAdmin && (
                   <button className="btn btn-danger" onClick={() => handleDelete(club.id, club.name)}>
-                    Delete
-                  </button>
-                )}
+                  Delete
+                </button>
+              )}
               </div>
             </article>
           ))}

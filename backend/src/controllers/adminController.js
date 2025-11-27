@@ -106,7 +106,7 @@ const createEvent = async (req, res) => {
     if (isNaN(eventDate.getTime())) {
       return res.status(400).json({ message: 'Invalid date format' });
     }
-
+    
     if (eventDate <= new Date()) {
       return res.status(400).json({ message: 'Event date must be set in the future.' });
     }
