@@ -213,8 +213,3 @@ clubs_help/
 - [ ] Test database connection
 - [ ] Create first admin user
 
-## 📄 License
-
-ISC
-
-Built with ❤️ for the clubs community.
