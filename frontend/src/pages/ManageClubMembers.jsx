@@ -67,6 +67,22 @@ export default function ManageClubMembers() {
     }
   }
 
+  async function handleDelete(membershipId, userName) {
+    if (!window.confirm(`Are you sure you want to remove ${userName} from the club? This action cannot be undone.`)) {
+      return;
+    }
+    
+    setMessage('');
+    setError('');
+    try {
+      await apiClient.del(`/admin/member/${membershipId}`);
+      setMessage(`${userName} has been removed from the club.`);
+      loadData(); // Reload the list
+    } catch (e) {
+      setError(e.message || 'Failed to remove member');
+    }
+  }
+
   const isAdmin = user && (user.role === 'ADMIN' || user.role === 'admin');
   if (!user || !isAdmin) {
     return (
@@ -105,23 +121,21 @@ export default function ManageClubMembers() {
       {members.length === 0 ? (
         <div className="empty-state">No membership applications for this club.</div>
       ) : (
-        <div className="table-scroll">
+        <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Status</th>
                 <th>Applied</th>
-                <th>Actions</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {members.map(m => (
                 <tr key={m.id}>
-                  <td>{m.id}</td>
-                  <td>{m.user?.name || 'N/A'}</td>
+                  <td><strong>{m.user?.name || 'N/A'}</strong></td>
                   <td>{m.user?.email || 'N/A'}</td>
                   <td>
                     <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
@@ -130,18 +144,22 @@ export default function ManageClubMembers() {
                   </td>
                   <td>{m.createdAt ? new Date(m.createdAt).toLocaleDateString() : 'N/A'}</td>
                   <td>
-                    {m.status === 'PENDING' ? (
-                      <div className="card-actions">
-                        <button className="btn btn-secondary" onClick={() => handleApprove(m.id, m.user?.name || 'User')}>
-                          Approve
+                    <div className="table-actions" style={{ justifyContent: 'flex-end' }}>
+                      {m.status === 'PENDING' ? (
+                        <>
+                          <button className="btn btn-secondary" onClick={() => handleApprove(m.id, m.user?.name || 'User')}>
+                            Approve
+                          </button>
+                          <button className="btn btn-danger" onClick={() => handleReject(m.id, m.user?.name || 'User')}>
+                            Reject
+                          </button>
+                        </>
+                      ) : (
+                        <button className="btn btn-danger" onClick={() => handleDelete(m.id, m.user?.name || 'User')}>
+                          Remove
                         </button>
-                        <button className="btn btn-danger" onClick={() => handleReject(m.id, m.user?.name || 'User')}>
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="muted">{m.status === 'APPROVED' ? 'Approved' : 'Rejected'}</span>
-                    )}
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -152,4 +170,3 @@ export default function ManageClubMembers() {
     </section>
   );
 }
-

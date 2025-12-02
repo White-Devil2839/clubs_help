@@ -34,30 +34,32 @@ export default function AdminEventRegistrations() {
         title="Event registrations"
         description="Monitor demand and manage attendees across every event."
       />
-      <div className="table-scroll">
-        <table className="data-table">
-        <thead>
-          <tr>
-              <th>ID</th>
-              <th>User</th>
-              <th>Email</th>
-              <th>Event</th>
-              <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(r => (
-            <tr key={r.id}>
-              <td>{r.id}</td>
-              <td>{r.user?.name}</td>
-              <td>{r.user?.email}</td>
-              <td>{r.event?.title}</td>
-              <td>{r.event?.date ? new Date(r.event.date).toLocaleString() : ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {items.length === 0 ? (
+        <div className="empty-state">No event registrations found.</div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Event</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(r => (
+                <tr key={r.id}>
+                  <td><strong>{r.user?.name}</strong></td>
+                  <td>{r.user?.email}</td>
+                  <td>{r.event?.title}</td>
+                  <td>{r.event?.date ? new Date(r.event.date).toLocaleString() : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }

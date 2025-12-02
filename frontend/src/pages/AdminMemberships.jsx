@@ -34,34 +34,36 @@ export default function AdminMemberships() {
         title="Club memberships"
         description="Track every membership request and current status across clubs."
       />
-      <div className="table-scroll">
-        <table className="data-table">
-        <thead>
-          <tr>
-              <th>ID</th>
-              <th>User</th>
-              <th>Email</th>
-              <th>Club</th>
-              <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(m => (
-            <tr key={m.id}>
-              <td>{m.id}</td>
-              <td>{m.user?.name}</td>
-              <td>{m.user?.email}</td>
-              <td>{m.club?.name}</td>
-                <td>
-                  <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
-                    {m.status}
-                  </span>
-                </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {items.length === 0 ? (
+        <div className="empty-state">No memberships found.</div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Club</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(m => (
+                <tr key={m.id}>
+                  <td><strong>{m.user?.name}</strong></td>
+                  <td>{m.user?.email}</td>
+                  <td>{m.club?.name}</td>
+                  <td>
+                    <span className={`status-pill ${m.status === 'APPROVED' ? 'success' : m.status === 'REJECTED' ? 'danger' : 'pending'}`}>
+                      {m.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }

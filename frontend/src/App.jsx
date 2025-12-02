@@ -26,24 +26,28 @@ function ProtectedRoute({ children, roles }) {
 
 function Nav() {
   const { token, user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [adminDropdownOpen, setAdminDropdownOpen] = React.useState(false);
+
   const baseLinks = [
     { to: "/", label: "Home" },
     { to: "/clubs", label: "Clubs" },
     { to: "/events", label: "Events" },
   ];
+  
   const memberLinks = token ? [{ to: "/me", label: "My Activity" }] : [];
-  const adminLinks =
-    user?.role === "ADMIN"
-      ? [
-          { to: "/add-club", label: "Add Club" },
-          { to: "/admin/create-event", label: "Create Event" },
-          { to: "/admin/users", label: "Users" },
-          { to: "/admin/memberships", label: "Memberships" },
-          { to: "/admin/event-registrations", label: "Registrations" },
-        ]
-      : [];
+  
+  const adminLinks = user?.role === "ADMIN"
+    ? [
+        { to: "/add-club", label: "Add Club" },
+        { to: "/admin/create-event", label: "Create Event" },
+        { to: "/admin/users", label: "Users" },
+        { to: "/admin/memberships", label: "Memberships" },
+        { to: "/admin/event-registrations", label: "Registrations" },
+      ]
+    : [];
 
-  const navItems = [...baseLinks, ...memberLinks, ...adminLinks];
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <nav className="site-nav">
@@ -51,8 +55,10 @@ function Nav() {
         <NavLink to="/" className="nav-brand">
           Clubs<span>Hub</span>
         </NavLink>
+        
+        {/* Desktop Navigation */}
         <div className="nav-links">
-          {navItems.map((item) => (
+          {baseLinks.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -62,27 +68,114 @@ function Nav() {
               {item.label}
             </NavLink>
           ))}
+          {memberLinks.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+          {isAdmin && (
+            <div className="nav-dropdown">
+              <button 
+                className="nav-link dropdown-toggle"
+                onClick={() => setAdminDropdownOpen(!adminDropdownOpen)}
+              >
+                Admin ▾
+              </button>
+              {adminDropdownOpen && (
+                <div className="dropdown-menu">
+                  {adminLinks.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className="dropdown-item"
+                      onClick={() => setAdminDropdownOpen(false)}
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Mobile Menu Toggle */}
+        <button 
+          className="mobile-menu-toggle"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {/* Right Side Actions */}
         <div className="nav-right">
-        {token && user ? (
-          <>
+          {token && user ? (
+            <>
               <span className="user-chip">{user.name}</span>
               <button className="btn btn-outline" onClick={logout}>
                 Logout
               </button>
-          </>
-        ) : (
-          <>
+            </>
+          ) : (
+            <>
               <NavLink to="/register" className="btn btn-ghost">
                 Register
               </NavLink>
               <NavLink to="/login" className="btn btn-primary">
                 Login
               </NavLink>
-          </>
-        )}
+            </>
+          )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu">
+          {baseLinks.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className="mobile-menu-link"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+          {memberLinks.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className="mobile-menu-link"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+          {isAdmin && (
+            <>
+              <div className="mobile-menu-section">Admin</div>
+              {adminLinks.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className="mobile-menu-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
-import PageHeader from '../components/PageHeader';
+import Reveal from '../components/Reveal';
 
 export default function CreateEvent() {
   const { user } = useAuth();
@@ -46,9 +46,14 @@ export default function CreateEvent() {
 
   if (!user || user.role !== 'ADMIN') {
     return (
-      <section className="page-card">
-        <PageHeader title="Forbidden" description="You do not have permission to create events." />
-      </section>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Access Denied</h1>
+            <p className="muted">You do not have permission to create events.</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -94,58 +99,82 @@ export default function CreateEvent() {
   }
 
   return (
-    <section className="page-card">
-      <PageHeader
-        eyebrow="Admin"
-        title="Create an event"
-        description="Launch an event with a clear description and optional club association."
-      />
-      <form onSubmit={handleSubmit}>
-        <input
-          placeholder="Event name"
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          required
-        />
-        <textarea
-          placeholder="Description"
-          value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-          required
-        />
-        <input
-          type="datetime-local"
-          placeholder="Date"
-          value={form.date}
-          min={minDateValue}
-          onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-          required
-        />
-        <select
-          value={form.clubId}
-          onChange={e => setForm(f => ({ ...f, clubId: e.target.value }))}
-          disabled={clubsLoading || !!clubLoadError || clubs.length === 0}
-        >
-          <option value="">
-            {clubsLoading
-              ? 'Loading clubs...'
-              : clubLoadError
-              ? 'Unable to load clubs'
-              : 'No specific club (general event)'}
-          </option>
-          {clubs.map((club) => (
-            <option key={club.id} value={club.id}>
-              {club.name}
-            </option>
-          ))}
-        </select>
-        {clubLoadError && <p className="alert alert-error">{clubLoadError}</p>}
-        <button className="btn btn-primary" type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create event'}
-        </button>
-      </form>
-      {success && <div className="alert alert-success">Event created!</div>}
-      {error && <div className="alert alert-error">{error}</div>}
-    </section>
+    <div className="auth-container">
+      <Reveal className="auth-card">
+        <div className="auth-header">
+          <span className="eyebrow">Admin</span>
+          <h1>Create an event</h1>
+          <p className="muted">Launch an event with a clear description and optional club association</p>
+        </div>
+
+        {success && <div className="alert alert-success">Event created successfully!</div>}
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="eventName">Event name</label>
+            <input
+              id="eventName"
+              placeholder="e.g., Annual Tech Fest"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              placeholder="Describe what the event is about..."
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              required
+              rows="4"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="eventDate">Event date & time</label>
+            <input
+              id="eventDate"
+              type="datetime-local"
+              value={form.date}
+              min={minDateValue}
+              onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="clubId">Associated club (optional)</label>
+            <select
+              id="clubId"
+              value={form.clubId}
+              onChange={e => setForm(f => ({ ...f, clubId: e.target.value }))}
+              disabled={clubsLoading || !!clubLoadError || clubs.length === 0}
+            >
+              <option value="">
+                {clubsLoading
+                  ? 'Loading clubs...'
+                  : clubLoadError
+                  ? 'Unable to load clubs'
+                  : 'No specific club (general event)'}
+              </option>
+              {clubs.map((club) => (
+                <option key={club.id} value={club.id}>
+                  {club.name}
+                </option>
+              ))}
+            </select>
+            {clubLoadError && <p className="form-hint" style={{ color: 'var(--danger)' }}>{clubLoadError}</p>}
+          </div>
+
+          <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
+            {loading ? 'Creating event...' : 'Create event'}
+          </button>
+        </form>
+      </Reveal>
+    </div>
   );
 }

@@ -68,11 +68,10 @@ export default function ManageEventRegistrations() {
       {registrations.length === 0 ? (
         <div className="empty-state">No registrations for this event just yet.</div>
       ) : (
-        <div className="table-scroll">
+        <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Registered at</th>
@@ -81,8 +80,7 @@ export default function ManageEventRegistrations() {
             <tbody>
               {registrations.map(reg => (
                 <tr key={reg.id}>
-                  <td>{reg.id}</td>
-                  <td>{reg.user?.name || 'N/A'}</td>
+                  <td><strong>{reg.user?.name || 'N/A'}</strong></td>
                   <td>{reg.user?.email || 'N/A'}</td>
                   <td>{reg.registeredAt ? new Date(reg.registeredAt).toLocaleString() : 'N/A'}</td>
                 </tr>
@@ -94,4 +92,3 @@ export default function ManageEventRegistrations() {
     </section>
   );
 }
-
