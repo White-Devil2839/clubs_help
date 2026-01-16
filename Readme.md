@@ -3,7 +3,11 @@
 A modern, full-stack multi-tenant web application for managing campus clubs, events, and memberships across multiple institutions. Built with React, Node.js, Express, and MongoDB.
 
 ![Tech Stack](https://img.shields.io/badge/Stack-React%20%7C%20Express%20%7C%20MongoDB-blue)
-![Node Version](https://img.shields.io/badge/Node-22.x-green)
+![Node Version](https://img.shields.io/badge/Node-18.x+-green)
+
+## 🔗 Demo
+
+[Live Demo](#) <!-- Add your deployed link here -->
 
 ## ✨ Features
 
@@ -16,8 +20,8 @@ A modern, full-stack multi-tenant web application for managing campus clubs, eve
 ### 🔐 Authentication & Authorization
 - **JWT-based Authentication**: Secure token-based auth with refresh tokens
 - **HTTP-Only Cookies**: Refresh tokens stored securely
-- **Role-Based Access Control**: ADMIN, MEMBER roles
-- **Password Reset Flow**: Email-based password recovery
+- **Role-Based Access Control**: SUPER_ADMIN, ADMIN, MEMBER roles
+- **Password Reset Flow**: Email-based password recovery with SendGrid
 - **Protected Routes**: Frontend and backend route protection
 - **Audit Logging**: Track all admin actions
 
@@ -36,10 +40,10 @@ A modern, full-stack multi-tenant web application for managing campus clubs, eve
 - **Pagination**: Browse events with pagination controls
 - **Capacity Management**: Track available spots
 
-### 📧 Email Notifications (Resend)
+### 📧 Email Notifications (SendGrid)
 - **Institution Registration**: Welcome email with institution code
 - **Password Reset**: Secure reset link delivery
-- **Resend Integration**: Modern email API service
+- **SendGrid Integration**: Reliable email delivery service
 
 ### 🎨 Premium UI/UX
 - **Modern Design System**: CSS variables, glassmorphism, gradients
@@ -60,37 +64,39 @@ A modern, full-stack multi-tenant web application for managing campus clubs, eve
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Runtime**: Node.js 22.x
-- **Framework**: Express.js
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcryptjs
-- **Email Service**: Resend
-- **Security**: Helmet, express-mongo-sanitize, hpp
-- **Rate Limiting**: express-rate-limit
-- **Logging**: Morgan
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | 18.x+ | Runtime |
+| Express.js | 4.22.1 | Web Framework |
+| MongoDB | - | Database |
+| Mongoose | 8.20.1 | ODM |
+| JWT | 9.0.2 | Authentication |
+| bcryptjs | 3.0.3 | Password Hashing |
+| SendGrid | 8.1.6 | Email Service |
+| Helmet | 8.1.0 | Security Headers |
+| Morgan | 1.10.1 | Logging |
 
 ### Frontend
-- **Framework**: React 19
-- **Build Tool**: Vite 7
-- **Routing**: React Router DOM 7
-- **HTTP Client**: Axios
-- **Styling**: Custom CSS with design system
-- **Fonts**: Google Fonts (Outfit, Inter)
-- **State Management**: Context API
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18.2.0 | UI Framework |
+| Vite | 5.1.4 | Build Tool |
+| React Router | 6.22.1 | Client Routing |
+| Axios | 1.6.7 | HTTP Client |
+| CSS | Custom | Styling |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 22.x or higher
+- Node.js 18.x or higher
 - MongoDB (local or hosted)
-- Resend API key (for emails)
+- SendGrid API key (for emails)
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd multi-tenant
+git clone https://github.com/White-Devil2839/clubs_help.git
+cd clubs_help
 ```
 
 ### 2. Install Dependencies
@@ -120,34 +126,27 @@ MONGO_URI=mongodb://localhost:27017/multi-tenant-clubs
 # JWT Secret (use a strong random string)
 JWT_SECRET="your-super-secret-jwt-key-minimum-32-characters-long"
 
-# Email (Resend)
-RESEND_API_KEY=your_resend_api_key
-EMAIL_FROM="CampusHub <onboarding@resend.dev>"
+# Email (SendGrid)
+SENDGRID_API_KEY=your_sendgrid_api_key
+EMAIL_FROM="CampusHub <your-verified-email@domain.com>"
 
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
 ```
 
-**Important Notes**:
-- Generate a strong `JWT_SECRET` (32+ characters)
-- Get a Resend API key from https://resend.com
-- For production, verify your domain in Resend and update `EMAIL_FROM`
-
 ### 4. Run the Application
-
-#### Development Mode
 
 **Terminal 1 - Backend**:
 ```bash
 cd backend
-npm start
+npm run dev
 # Server runs on http://localhost:5008
 ```
 
 **Terminal 2 - Frontend**:
 ```bash
 cd frontend
-npm start
+npm run dev
 # App runs on http://localhost:5173
 ```
 
@@ -162,8 +161,10 @@ npm start
 ## 📁 Project Structure
 
 ```
-multi-tenant/
+clubs_help/
 ├── backend/
+│   ├── config/
+│   │   └── db.js                   # MongoDB connection
 │   ├── controllers/
 │   │   ├── adminController.js      # Admin operations
 │   │   ├── authController.js       # Authentication & registration
@@ -192,10 +193,9 @@ multi-tenant/
 │   │   ├── auditLogger.js          # Audit logging utility
 │   │   ├── cronJobs.js             # Scheduled tasks
 │   │   ├── jwt.js                  # JWT utilities
-│   │   └── sendEmail.js            # Email service (Resend)
-│   ├── config/
-│   │   └── db.js                   # MongoDB connection
-│   └── server.js                   # Express app entry
+│   │   └── sendEmail.js            # SendGrid email service
+│   ├── server.js                   # Express app entry
+│   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -235,55 +235,68 @@ multi-tenant/
 │   │   ├── App.jsx                 # Main app component
 │   │   └── main.jsx                # Entry point
 │   └── package.json
+├── .gitignore
 └── README.md
 ```
 
 ## 🔌 API Endpoints
 
 ### Global Authentication
-- `POST /api/institutions/register` - Register new institution
-- `POST /api/auth/login` - Global login
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Logout
-- `POST /api/auth/forgotpassword` - Request password reset
-- `PUT /api/auth/resetpassword/:token` - Reset password
-- `PUT /api/auth/password` - Change password (protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/institutions/register` | Register new institution |
+| POST | `/api/auth/login` | Global login |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/logout` | Logout |
+| POST | `/api/auth/forgotpassword` | Request password reset |
+| PUT | `/api/auth/resetpassword/:token` | Reset password |
+| PUT | `/api/auth/password` | Change password (protected) |
 
 ### Tenant Authentication
-- `POST /api/:institutionCode/auth/login` - Tenant login
-- `POST /api/:institutionCode/auth/register` - Tenant registration
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/:institutionCode/auth/login` | Tenant login |
+| POST | `/api/:institutionCode/auth/register` | Tenant registration |
 
 ### Clubs
-- `GET /api/:institutionCode/clubs` - List all clubs
-- `GET /api/:institutionCode/clubs/:clubId` - Get club details
-- `GET /api/:institutionCode/clubs/:clubId/members` - Get club members
-- `GET /api/:institutionCode/clubs/:clubId/events` - Get club events
-- `POST /api/:institutionCode/clubs/:clubId/join` - Join club (protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/:institutionCode/clubs` | List all clubs |
+| GET | `/api/:institutionCode/clubs/:clubId` | Get club details |
+| GET | `/api/:institutionCode/clubs/:clubId/members` | Get club members |
+| GET | `/api/:institutionCode/clubs/:clubId/events` | Get club events |
+| POST | `/api/:institutionCode/clubs/:clubId/join` | Join club (protected) |
 
 ### Events
-- `GET /api/:institutionCode/events` - List events (paginated)
-- `POST /api/:institutionCode/events/:eventId/register` - Register for event (protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/:institutionCode/events` | List events (paginated) |
+| POST | `/api/:institutionCode/events/:eventId/register` | Register for event |
 
 ### Admin
-- `POST /api/:institutionCode/admin/clubs` - Create club
-- `POST /api/:institutionCode/admin/events` - Create event
-- `GET /api/:institutionCode/admin/requests` - Get pending membership requests
-- `PATCH /api/:institutionCode/admin/requests/:id` - Approve/reject membership
-- `GET /api/:institutionCode/admin/users` - List users (with search/filter/sort)
-- `DELETE /api/:institutionCode/admin/users/:id` - Delete user
-- `PATCH /api/:institutionCode/admin/users/:id/role` - Update user role
-- `GET /api/:institutionCode/admin/audit-logs` - Get audit logs
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/:institutionCode/admin/clubs` | Create club |
+| POST | `/api/:institutionCode/admin/events` | Create event |
+| GET | `/api/:institutionCode/admin/requests` | Get pending requests |
+| PATCH | `/api/:institutionCode/admin/requests/:id` | Approve/reject membership |
+| GET | `/api/:institutionCode/admin/users` | List users |
+| DELETE | `/api/:institutionCode/admin/users/:id` | Delete user |
+| PATCH | `/api/:institutionCode/admin/users/:id/role` | Update user role |
+| GET | `/api/:institutionCode/admin/audit-logs` | Get audit logs |
 
 ### User
-- `GET /api/:institutionCode/me/memberships` - Get my memberships
-- `GET /api/:institutionCode/me/event-registrations` - Get my event registrations
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/:institutionCode/me/memberships` | Get my memberships |
+| GET | `/api/:institutionCode/me/event-registrations` | Get my event registrations |
 
 ## 🎯 Key Features Explained
 
 ### Multi-Tenancy Architecture
 Each institution operates in complete isolation:
 - Separate data spaces per institution
-- Institution-specific URLs (/:institutionCode/...)
+- Institution-specific URLs (`/:institutionCode/...`)
 - Middleware enforces tenant boundaries
 - No cross-institution data access
 
@@ -296,89 +309,63 @@ Comprehensive event creation rules:
 
 ### Membership Workflow
 Smart UI adapts to membership status:
-- **Not a member**: "Join Club" button
-- **Pending approval**: "Request Pending" (disabled)
-- **Approved**: "View Club" button (navigates to details)
-- **Rejected**: Shows rejection status
+| Status | Button | Action |
+|--------|--------|--------|
+| Not a member | "Join Club" | Sends join request |
+| Pending | "Request Pending" | Disabled |
+| Approved | "View Club" | Navigate to details |
+| Rejected | Shows status | N/A |
 
 ### On-Screen Messaging
 All user feedback appears as styled banners:
 - ✅ Success messages (green)
 - ❌ Error messages (red)
 - Auto-dismiss after 3-5 seconds
-- No browser alert() popups
+- No browser `alert()` popups
 
 ## 📝 Environment Variables Reference
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `PORT` | ❌ No | `5008` | Backend server port |
-| `MONGO_URI` | ✅ Yes | - | MongoDB connection string |
-| `JWT_SECRET` | ✅ Yes | - | Secret key for JWT (32+ chars) |
-| `RESEND_API_KEY` | ✅ Yes | - | Resend API key for emails |
-| `EMAIL_FROM` | ❌ No | `CampusHub <onboarding@resend.dev>` | Email sender address |
-| `FRONTEND_URL` | ❌ No | `http://localhost:5173` | Frontend URL for CORS |
-| `NODE_ENV` | ❌ No | `development` | Environment mode |
+| `PORT` | No | `5000` | Backend server port |
+| `MONGO_URI` | **Yes** | - | MongoDB connection string |
+| `JWT_SECRET` | **Yes** | - | Secret key for JWT (32+ chars) |
+| `SENDGRID_API_KEY` | **Yes** | - | SendGrid API key for emails |
+| `EMAIL_FROM` | No | - | Email sender address |
+| `FRONTEND_URL` | No | `http://localhost:5173` | Frontend URL for CORS |
+| `NODE_ENV` | No | `development` | Environment mode |
 
 ## 🚀 Deployment Guide
 
-### Backend Deployment
-
-**Render / Railway / Heroku**:
+### Backend Deployment (Render / Railway)
 1. Connect your repository
 2. Set environment variables
-3. Deploy command: `npm start`
-4. Build command: `npm install`
+3. Build command: `npm install`
+4. Start command: `npm start`
 
-**VPS (DigitalOcean, AWS, etc.)**:
-```bash
-# Install Node.js 22.x
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Install PM2
-sudo npm install -g pm2
-
-# Clone and setup
-git clone <your-repo>
-cd multi-tenant/backend
-npm install
-pm2 start server.js --name campushub
-pm2 save
-pm2 startup
-```
-
-### Frontend Deployment
-
-**Vercel / Netlify**:
+### Frontend Deployment (Vercel / Netlify)
 1. Connect repository
 2. Build command: `npm run build`
 3. Output directory: `dist`
 4. Set environment variable: `VITE_API_URL=https://your-backend.com/api`
 
-### Database
-
-**MongoDB Atlas** (Recommended):
-1. Create free cluster at https://mongodb.com/cloud/atlas
-2. Whitelist your IP or use 0.0.0.0/0 for development
+### Database (MongoDB Atlas)
+1. Create free cluster at [MongoDB Atlas](https://mongodb.com/cloud/atlas)
+2. Whitelist your IP or use `0.0.0.0/0`
 3. Get connection string and add to `MONGO_URI`
 
 ## 🔒 Production Checklist
 
 - [ ] Set strong `JWT_SECRET` (use: `openssl rand -base64 32`)
 - [ ] Configure MongoDB Atlas with proper access controls
-- [ ] Set up Resend with verified domain
-- [ ] Update `EMAIL_FROM` to your domain
+- [ ] Set up SendGrid with verified sender
+- [ ] Update `EMAIL_FROM` to verified email
 - [ ] Enable HTTPS for both frontend and backend
 - [ ] Set `FRONTEND_URL` to production URL
 - [ ] Configure `VITE_API_URL` in frontend
-- [ ] Set up PM2 for process management
-- [ ] Configure nginx reverse proxy (if using VPS)
-- [ ] Set up SSL certificates (Let's Encrypt)
 - [ ] Enable rate limiting in production
 - [ ] Set up monitoring and logging
 - [ ] Create database backups
-- [ ] Test all features in production environment
 
 ## 🐛 Troubleshooting
 
@@ -389,21 +376,16 @@ mongosh "your-connection-string"
 ```
 
 ### Email Not Sending
-- Verify `RESEND_API_KEY` is correct
-- Check Resend dashboard for errors
-- For production, verify your domain in Resend
-- Update `EMAIL_FROM` to use verified domain
+- Verify `SENDGRID_API_KEY` is correct
+- Check SendGrid dashboard for errors
+- Verify sender email in SendGrid
+- Check spam folder
 
 ### Frontend Can't Connect to Backend
 - Verify `VITE_API_URL` is set correctly
 - Check CORS configuration in backend
 - Ensure backend is running and accessible
 - Check browser console for errors
-
-### Institution Code Issues
-- Old database index: Run `db.institutions.dropIndex('institutionCode_1')`
-- Ensure MongoDB is running
-- Check for duplicate institution codes
 
 ## 📄 License
 
@@ -412,10 +394,6 @@ MIT
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Support
-
-For issues and questions, please open an issue on the repository.
 
 ---
 
